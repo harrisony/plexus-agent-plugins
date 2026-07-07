@@ -21,5 +21,3 @@ export {
 	mapInputModalities,
 	mapPreferredApi,
 } from "./convert.ts";
-
-export { PLEXUS_SESSION_ID_HEADER } from "./constants.ts";

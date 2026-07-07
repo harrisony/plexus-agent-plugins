@@ -480,6 +480,11 @@ var PlexusProviderPlugin = async (ctx) => {
           }
         }
       ]
+    },
+    "chat.headers": async (input, output) => {
+      if (input.provider.info.id === PLEXUS_PROVIDER_ID) {
+        output.headers["x-plexus-session-id"] = input.sessionID;
+      }
     }
   };
 };

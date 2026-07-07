@@ -129,6 +129,10 @@ The OpenCode plugin respects each model's `preferred_api` value and routes model
 - `messages` / `anthropic-messages` → Anthropic Messages API
 - `gemini` / `google-generative-ai` → Google Gemini API
 
+Both the pi extension and the OpenCode plugin send Plexus's internal
+`x-plexus-session-id` header on Plexus requests. This is separate from any
+upstream cache-affinity headers.
+
 You can also pre-configure via environment variables:
 
 ```sh
