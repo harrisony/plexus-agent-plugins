@@ -13,6 +13,7 @@
 import type { ExtensionAPI, ExtensionCommandContext, ExtensionContext } from "@earendil-works/pi-coding-agent";
 import type { Api } from "@earendil-works/pi-ai";
 import { convertDescriptors, fetchPlexusModels } from "../../plexus-models/src/index.ts";
+import { PLEXUS_SESSION_ID_HEADER } from "../../plexus-models/src/index.ts";
 import { getBaseUrl, getDefaultModel, getModelsUrl, saveBaseUrl } from "./config.ts";
 import { readCachedModelsSync, writeCachedModels, writeRawResponse } from "./cache.ts";
 import { log } from "./log.ts";
@@ -45,6 +46,15 @@ export default function plexusExtension(pi: ExtensionAPI): void {
 		models: startupModels,
 	});
 	currentModels = startupModels;
+
+	// Inject Plexus's internal sticky-session header at request time.
+	// This keeps the value extension-local and avoids coupling it to any
+	// upstream cache-affinity compat flags in pi-ai.
+	pi.on("before_provider_headers", (event, ctx) => {
+		if (ctx.model?.provider !== PROVIDER_NAME) return;
+
+		event.headers[PLEXUS_SESSION_ID_HEADER] = ctx.sessionManager.getSessionId();
+	});
 
 	// -------------------------------------------------------------------------
 	// session_start: live-refresh models using the stored API key.

@@ -320,8 +320,7 @@ function descriptorToPiModel(descriptor) {
   let compat;
   if (descriptor.preferredApi === "openai-completions") {
     const heuristic = detectOpenAICompletionsCompat(descriptor.provider, descriptor.baseUrl);
-    const merged = descriptor.piOptions ? { ...heuristic, ...descriptor.piOptions } : heuristic;
-    compat = merged;
+    compat = descriptor.piOptions ? { ...heuristic, ...descriptor.piOptions } : heuristic;
   } else if (descriptor.piOptions) {
     compat = descriptor.piOptions;
   }
@@ -358,6 +357,11 @@ function plexusExtension(pi) {
     models: startupModels
   });
   currentModels = startupModels;
+  pi.on("before_provider_headers", (event, ctx) => {
+    if (ctx.model?.provider !== PROVIDER_NAME)
+      return;
+    event.headers["x-plexus-session-id"] = ctx.sessionManager.getSessionId();
+  });
   pi.on("session_start", async (_event, ctx) => {
     const apiKey = await ctx.modelRegistry.authStorage.getApiKey(PROVIDER_NAME);
     const baseUrl = getBaseUrl();

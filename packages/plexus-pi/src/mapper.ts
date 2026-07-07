@@ -27,18 +27,18 @@ export function descriptorToPiModel(descriptor: PlexusModelDescriptor) {
 		cacheWrite: descriptor.cost.cacheWrite * 1_000_000,
 	};
 
-	// Compat applies only to openai-completions; other dialects auto-detect from URL
-	let compat: OpenAICompletionsCompat | undefined;
+	// Assert the openai-completions compat contract locally. Other dialects
+	// still auto-detect or pass through server-supplied pi_options unchanged.
+	let compat: OpenAICompletionsCompat | Record<string, unknown> | undefined;
 	if (descriptor.preferredApi === "openai-completions") {
 		const heuristic = detectOpenAICompletionsCompat(descriptor.provider, descriptor.baseUrl);
 		// pi_options override heuristics — the Plexus server knows best
-		const merged = descriptor.piOptions
+		compat = (descriptor.piOptions
 			? { ...heuristic, ...descriptor.piOptions }
-			: heuristic;
-		compat = merged as OpenAICompletionsCompat;
+			: heuristic) as OpenAICompletionsCompat;
 	} else if (descriptor.piOptions) {
 		// For non-openai-completions dialects that still carry pi_options, pass them through
-		compat = descriptor.piOptions as OpenAICompletionsCompat;
+		compat = descriptor.piOptions;
 	}
 
 	return {
